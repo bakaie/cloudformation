@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: IAM Group, Policy, and Users for S3 VPC Endpoint Access
+
+Resources:
+  S3VPCEndpointAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: S3-VPCEndpoint-Access-Policy
+      Description: Allows S3 read/write access only through VPC endpoints
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowS3ReadWriteViaVPCEndpoint
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+              - s3:ListBucket
+              - s3:GetObjectVersion
+              - s3:GetObjectAcl
+              - s3:GetObjectTagging
+              - s3:PutObjectTagging
+              - s3:DeleteObjectTagging
+              - s3:GetObjectAttributes
+              - s3:ListMultipartUploadParts
+              - s3:AbortMultipartUpload
+            Resource:
+              - arn:aws:s3:::edapoc-testbucket-02122026
+              - arn:aws:s3:::edapoc-testbucket-02122026/*
+            Condition:
+              StringEquals:
+                aws:sourceVpce:
+                  - vpce-04602a7a4d02c937c
+                  - vpce-01a86cbd06711e5d4
+
+  S3VPCEndpointAccessGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: S3-VPCEndpoint-Access-Group
+      ManagedPolicyArns:
+        - !Ref S3VPCEndpointAccessPolicy
+
+  UserChar:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: Char
+      Groups:
+        - !Ref S3VPCEndpointAccessGroup
+
+  UserFormal:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: Formal
+      Groups:
+        - !Ref S3VPCEndpointAccessGroup
+
+  UserVCSAP:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: VCSAP
+      Groups:
+        - !Ref S3VPCEndpointAccessGroup
+
+  UserR:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: R
+      Groups:
+        - !Ref S3VPCEndpointAccessGroup
+
+Outputs:
+  PolicyArn:
+    Description: ARN of the S3 VPC Endpoint Access Policy
+    Value: !Ref S3VPCEndpointAccessPolicy
+
+  GroupName:
+    Description: Name of the IAM Group
+    Value: !Ref S3VPCEndpointAccessGroup
+
+  Users:
+    Description: List of created IAM users
+    Value: !Join
+      - ', '
+      - - !Ref UserChar
+        - !Ref UserFormal
+        - !Ref UserVCSAP
+        - !Ref UserR
