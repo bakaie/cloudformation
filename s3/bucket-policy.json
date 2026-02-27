@@ -1,0 +1,77 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowIdentityCenterAdminFromAnywhere",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "*"
+            },
+            "Action": "s3:*",
+            "Resource": [
+                "arn:aws:s3:::edapoc-testbucket-02122026",
+                "arn:aws:s3:::edapoc-testbucket-02122026/*"
+            ],
+            "Condition": {
+                "ArnLike": {
+                    "aws:PrincipalArn": "arn:aws:iam::940723106892:role/aws-reserved/sso.amazonaws.com/us-west-2/AWSReservedSSO_AWSAdministratorAccess_*"
+                }
+            }
+        },
+        {
+            "Sid": "DenyAccessExceptFromVPCEndpoints",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:DeleteObject",
+                "s3:ListBucket",
+                "s3:GetObjectVersion",
+                "s3:GetObjectAcl",
+                "s3:GetObjectTagging",
+                "s3:PutObjectTagging",
+                "s3:DeleteObjectTagging",
+                "s3:GetObjectAttributes",
+                "s3:ListMultipartUploadParts",
+                "s3:AbortMultipartUpload"
+            ],
+            "Resource": [
+                "arn:aws:s3:::edapoc-testbucket-02122026",
+                "arn:aws:s3:::edapoc-testbucket-02122026/*"
+            ],
+            "Condition": {
+                "StringNotEquals": {
+                    "aws:sourceVpce": [
+                        "vpce-04602a7a4d02c937c",
+                        "vpce-01a86cbd06711e5d4"
+                    ]
+                },
+                "ArnNotLike": {
+                    "aws:PrincipalArn": "arn:aws:iam::940723106892:role/aws-reserved/sso.amazonaws.com/us-west-2/AWSReservedSSO_AWSAdministratorAccess_*"
+                }
+            }
+        },
+        {
+            "Sid": "DenyAllAccessNotFromEndpoints",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": [
+                "arn:aws:s3:::edapoc-testbucket-02122026",
+                "arn:aws:s3:::edapoc-testbucket-02122026/*"
+            ],
+            "Condition": {
+                "StringNotEquals": {
+                    "aws:sourceVpce": [
+                        "vpce-04602a7a4d02c937c",
+                        "vpce-01a86cbd06711e5d4"
+                    ]
+                },
+                "ArnNotLike": {
+                    "aws:PrincipalArn": "arn:aws:iam::940723106892:role/aws-reserved/sso.amazonaws.com/us-west-2/AWSReservedSSO_AWSAdministratorAccess_*"
+                }
+            }
+        }
+    ]
+}
